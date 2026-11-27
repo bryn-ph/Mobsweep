@@ -10,6 +10,7 @@
 ## AddonCompartmentFunc: Mobsweep_OnAddonCompartmentClick
 ## X-License: MIT
 ## X-Website: https://github.com/bryn-ph/Mobsweep
+## X-Curse-Project-ID: 1834189
 
 Core\Init.lua
 Core\Defaults.lua
