@@ -1,6 +1,6 @@
-"""Build Tagger's icon from assets/crosshair.png, in the style of Needy's.
+"""Build Tagger's icon from assets/bullseye.png, in the style of Needy's.
 
-Source art: "Crosshair" by Delapouite, https://game-icons.net/1x1/delapouite/crosshair.html,
+Source art: "Bullseye" by Skoll, https://game-icons.net/1x1/skoll/bullseye.html,
 licensed CC BY 3.0 (https://creativecommons.org/licenses/by/3.0/). This script restyles it
 (colour, background, frame) as a WoW-style icon:
 
@@ -15,7 +15,7 @@ import pathlib
 from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "assets" / "crosshair.png"
+SOURCE = ROOT / "assets" / "bullseye.png"
 LOGO = ROOT / "assets" / "logo.png"
 TGA = ROOT / "Tagger" / "Media" / "icon.tga"
 
@@ -50,7 +50,7 @@ def vertical(size: int, top, bottom) -> Image.Image:
 
 
 def glyph_mask(scale: float) -> Image.Image:
-    """The crosshair's alpha, scaled and centred on a SIZE canvas."""
+    """The source art's alpha, scaled and centred on a SIZE canvas."""
     src = Image.open(SOURCE).convert("RGBA").getchannel("A")
     inner = round(SIZE * scale)
     src = src.resize((inner, inner), Image.Resampling.LANCZOS)
@@ -63,8 +63,9 @@ def glyph_mask(scale: float) -> Image.Image:
 def build() -> Image.Image:
     icon = radial(SIZE, BG_CENTRE, BG_EDGE).convert("RGBA")
 
-    # The source art fills 448 of its 512px; 0.78 puts its reach just inside the frame.
-    mask = glyph_mask(0.78)
+    # The source art spans about 460 of its 512px; 0.86 fills the field and stays clear of the frame,
+    # so it still reads as a target at minimap size.
+    mask = glyph_mask(0.86)
     # Soft drop shadow, then a dark outline so the gold reads at small sizes.
     shadow = Image.new("RGBA", (SIZE, SIZE), (0, 0, 0, 0))
     shadow.putalpha(ImageChops.offset(mask, 6, 10).filter(ImageFilter.GaussianBlur(10)).point(lambda v: v * 0.8))

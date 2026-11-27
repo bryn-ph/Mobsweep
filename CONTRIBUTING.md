@@ -52,7 +52,7 @@ CI runs both on every push and pull request, and builds the release zip without 
 
 ## Generated files
 
-- `Tagger/Media/icon.tga` and `assets/logo.png`: the addon icon, from `tools\gen_icon.py` (source art `assets/crosshair.png`, CC BY 3.0, see README).
+- `Tagger/Media/icon.tga` and `assets/logo.png`: the addon icon, from `tools\gen_icon.py` (source art `assets/bullseye.png`, CC BY 3.0, see README).
 
 ## Debugging
 

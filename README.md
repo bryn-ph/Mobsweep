@@ -29,4 +29,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 Code: [MIT](LICENSE).
 
-The icon is based on [Crosshair](https://game-icons.net/1x1/delapouite/crosshair.html) by Delapouite, from [game-icons.net](https://game-icons.net), licensed [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/). It has been recoloured and framed.
+The icon is based on [Bullseye](https://game-icons.net/1x1/skoll/bullseye.html) by Skoll, from [game-icons.net](https://game-icons.net), licensed [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/). It has been recoloured and framed.

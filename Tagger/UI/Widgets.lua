@@ -355,7 +355,12 @@ function Widgets.Window(name, title, width, height)
 	if ButtonFrameTemplate_HideButtonBar then ButtonFrameTemplate_HideButtonBar(f) end
 	local container = child(f, "PortraitContainer")
 	local portrait = container and child(container, "portrait")
-	if portrait then portrait:SetTexture(Widgets.ICON) end
+	if portrait then
+		portrait:SetTexture(Widgets.ICON)
+		-- The portrait is 62x62, but its circle mask covers x 2-60 and y 0-58 of it (SharedUIPanelTemplates.xml,
+		-- CircleMask), so the circle sits 2px above the texture's centre. Map the icon onto the circle.
+		portrait:SetTexCoord(-2 / 58, 60 / 58, 0, 62 / 58)
+	end
 	local inset = child(f, "Inset")
 	if inset then inset:Hide() end
 	if f.SetTitle then
