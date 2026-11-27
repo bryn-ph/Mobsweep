@@ -38,10 +38,10 @@ local function cleanSettings(saved)
 end
 
 function DB.Init()
-	if type(TaggerDB) ~= "table" then
-		TaggerDB = {}
+	if type(MobsweepDB) ~= "table" then
+		MobsweepDB = {}
 	end
-	local db = TaggerDB
+	local db = MobsweepDB
 	db.version = CURRENT_VERSION
 	db.settings = cleanSettings(db.settings)
 	ns.db = db

@@ -104,7 +104,7 @@ end
 -- Hover card (minimal) --------------------------------------------------------------------------
 
 local function createCard()
-	card = CreateFrame("Frame", "TaggerTrackerCard", panel, "BackdropTemplate")
+	card = CreateFrame("Frame", "MobsweepTrackerCard", panel, "BackdropTemplate")
 	card:SetSize(CARD_W, CARD_H)
 	card:SetFrameStrata("TOOLTIP")
 	setBox(card, 0.85)
@@ -173,7 +173,7 @@ end
 -- Building ---------------------------------------------------------------------------------------
 
 local function create()
-	panel = CreateFrame("Frame", "TaggerTracker", UIParent, "BackdropTemplate")
+	panel = CreateFrame("Frame", "MobsweepTracker", UIParent, "BackdropTemplate")
 	panel:SetSize(FULL_W, FULL_H)
 	panel:SetClampedToScreen(true)
 	panel:SetFrameStrata("MEDIUM")
@@ -186,7 +186,7 @@ local function create()
 
 	-- Acts on key up, like Jest's wheel button; a CLICK binding sends both down and up.
 	-- Left: the macro text. Right: the custom "tracking" type, which the template runs as this method.
-	button = CreateFrame("Button", "TaggerTrackerButton", panel, "SecureActionButtonTemplate")
+	button = CreateFrame("Button", "MobsweepTrackerButton", panel, "SecureActionButtonTemplate")
 	button:SetSize(ICON, ICON)
 	button:RegisterForClicks("AnyDown", "AnyUp")
 	button:RegisterForDrag("LeftButton")
@@ -214,7 +214,7 @@ local function create()
 		if panel.minimal then
 			showCard()
 		else
-			W.Tip(self, "Tagger")
+			W.Tip(self, "Mobsweep")
 		end
 	end)
 	button:SetScript("OnLeave", function()

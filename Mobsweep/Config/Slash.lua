@@ -11,7 +11,7 @@ end
 local function help()
 	ns.Print("commands:")
 	for _, c in ipairs(order) do
-		print(("  |cffffd100/tagger %s|r - %s"):format(c.name, c.usage))
+		print(("  |cffffd100/mobsweep %s|r - %s"):format(c.name, c.usage))
 	end
 end
 
@@ -37,7 +37,7 @@ add("mark", "[1-8 | off] which raid marker the macro puts on targets", function(
 		ns.settings.mark = true
 		ns.settings.marker = math.floor(n)
 	else
-		ns.Print("/tagger mark 1-8 (8 is skull), or /tagger mark off")
+		ns.Print("/mobsweep mark 1-8 (8 is skull), or /mobsweep mark off")
 		return
 	end
 	ns.Macro.Refresh()
@@ -55,7 +55,7 @@ add("button", "show or hide the Tracking panel", function()
 	ns.settings.showButton = not ns.settings.showButton
 	ns.TrackerButton.Update()
 	ns.Window.Refresh()
-	ns.Print("Tracking panel " .. (ns.settings.showButton and "shown." or "hidden. /tagger button brings it back."))
+	ns.Print("Tracking panel " .. (ns.settings.showButton and "shown." or "hidden. /mobsweep button brings it back."))
 end)
 
 add("style", "switch the Tracking panel between full and minimal", function()
@@ -73,7 +73,7 @@ add("minimap", "show or hide the minimap icon", function()
 	ns.settings.minimapShow = not ns.settings.minimapShow
 	ns.MinimapButton.Update()
 	ns.Window.Refresh()
-	ns.Print("Minimap icon " .. (ns.settings.minimapShow and "shown." or "hidden. /tagger minimap brings it back."))
+	ns.Print("Minimap icon " .. (ns.settings.minimapShow and "shown." or "hidden. /mobsweep minimap brings it back."))
 end)
 
 add("debug", "toggle debug output", function()
@@ -94,8 +94,8 @@ end)
 
 add("help", "this list", help)
 
-SLASH_TAGGER1 = "/tagger"
-SlashCmdList.TAGGER = function(msg)
+SLASH_MOBSWEEP1 = "/mobsweep"
+SlashCmdList.MOBSWEEP = function(msg)
 	local cmd, rest = (msg or ""):match("^%s*(%S*)%s*(.-)%s*$")
 	cmd = cmd:lower()
 	if cmd == "" then

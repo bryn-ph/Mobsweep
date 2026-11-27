@@ -1,15 +1,16 @@
 ## Interface: 16001
-## Title: Tagger
+## Title: Mobsweep
 ## Notes: Targets and marks the mobs your tracked quest needs you to kill or loot, and tells you when one is near.
 ## Author: bryn-ph
 ## Version: @project-version@
 ## Category: Quests
-## IconTexture: Interface\AddOns\Tagger\Media\icon
-## SavedVariables: TaggerDB
+## IconTexture: Interface\AddOns\Mobsweep\Media\icon
+## SavedVariables: MobsweepDB
 ## OptionalDeps: QuestieDB
-## AddonCompartmentFunc: Tagger_OnAddonCompartmentClick
+## AddonCompartmentFunc: Mobsweep_OnAddonCompartmentClick
 ## X-License: MIT
-## X-Website: https://github.com/bryn-ph/Tagger
+## X-Website: https://github.com/bryn-ph/Mobsweep
+## X-Curse-Project-ID: 1834189
 
 Core\Init.lua
 Core\Defaults.lua

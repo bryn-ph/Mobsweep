@@ -141,7 +141,7 @@ local menu
 local MENU_ROW_H, MENU_MIN_W, MENU_PAD = 20, 140, 26
 
 local function createMenu()
-	menu = CreateFrame("Frame", "TaggerMenu", UIParent, "BackdropTemplate")
+	menu = CreateFrame("Frame", "MobsweepMenu", UIParent, "BackdropTemplate")
 	menu:SetFrameStrata("FULLSCREEN_DIALOG")
 	menu:SetBackdrop({
 		bgFile = "Interface\\Buttons\\WHITE8x8",
@@ -154,7 +154,7 @@ local function createMenu()
 	menu:EnableMouse(true)
 	menu:Hide()
 	menu.rows = {}
-	table.insert(UISpecialFrames, "TaggerMenu") -- Esc closes it
+	table.insert(UISpecialFrames, "MobsweepMenu") -- Esc closes it
 	-- Close on a click outside. A click on the button that opened it is left to that button, which
 	-- toggles: closing here first would make its click reopen the menu.
 	menu:SetScript("OnEvent", function(self)
@@ -355,7 +355,12 @@ function Widgets.Window(name, title, width, height)
 	if ButtonFrameTemplate_HideButtonBar then ButtonFrameTemplate_HideButtonBar(f) end
 	local container = child(f, "PortraitContainer")
 	local portrait = container and child(container, "portrait")
-	if portrait then portrait:SetTexture(Widgets.ICON) end
+	if portrait then
+		portrait:SetTexture(Widgets.ICON)
+		-- The portrait is 62x62, but its circle mask covers x 2-60 and y 0-58 of it (SharedUIPanelTemplates.xml,
+		-- CircleMask), so the circle sits 2px above the texture's centre. Map the icon onto the circle.
+		portrait:SetTexCoord(-2 / 58, 60 / 58, 0, 62 / 58)
+	end
 	local inset = child(f, "Inset")
 	if inset then inset:Hide() end
 	if f.SetTitle then
