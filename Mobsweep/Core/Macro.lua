@@ -1,4 +1,4 @@
--- The Quarry macro, after RestedXP's targeting macro: clear the target, a /targetexact line for each
+-- The Mobsweep macro, after RestedXP's targeting macro: clear the target, a /targetexact line for each
 -- wanted mob (the most wanted last, so it wins when several are in range), drop a corpse, then mark what
 -- it found. Clearing first means it never ends up on (or marks) whatever you had targeted before.
 -- "/tm !N" leaves a mob that already has that marker alone instead of toggling it off.
@@ -17,7 +17,7 @@ local ready = false -- macros are loaded; set shortly after the first loading sc
 local queued = false
 local warnedFull = false
 
-Macro.EMPTY = "# Quarry: no quest mobs"
+Macro.EMPTY = "# Mobsweep: no quest mobs"
 
 -- The macro text for `list` (best first), fitted to the macro limit. marker: raid target index, or nil
 -- for no marking. Sets .inMacro on each entry. Returns the body and how many mobs made it in.
@@ -64,7 +64,7 @@ local function write(body)
 	if not fits then
 		if not warnedFull then
 			warnedFull = true
-			ns.Print("Your macros are full. Delete one and Quarry will make its macro.")
+			ns.Print("Your macros are full. Delete one and Mobsweep will make its macro.")
 		end
 		return false
 	end
@@ -73,7 +73,7 @@ local function write(body)
 		ns.Debug("CreateMacro failed:", err)
 		return false
 	end
-	ns.Print("Made the |cffffd100Quarry|r macro. Put it on your bars from /quarry or /macro.")
+	ns.Print("Made the |cffffd100Mobsweep|r macro. Put it on your bars from /mobsweep or /macro.")
 	return true
 end
 

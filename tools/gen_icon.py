@@ -1,11 +1,11 @@
-"""Build Quarry's icon from assets/bullseye.png, in the style of Needy's.
+"""Build Mobsweep's icon from assets/bullseye.png, in the style of Needy's.
 
 Source art: "Bullseye" by Skoll, https://game-icons.net/1x1/skoll/bullseye.html,
 licensed CC BY 3.0 (https://creativecommons.org/licenses/by/3.0/). This script restyles it
 (colour, background, frame) as a WoW-style icon:
 
     assets/logo.png       512x512, for project pages (CurseForge, Wago, GitHub)
-    Quarry/Media/icon.tga 64x64, the in-game addon icon (TOC IconTexture)
+    Mobsweep/Media/icon.tga 64x64, the in-game addon icon (TOC IconTexture)
 
 Usage:
     .venv\\Scripts\\python tools\\gen_icon.py
@@ -17,7 +17,7 @@ from PIL import Image, ImageChops, ImageDraw, ImageFilter
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "assets" / "bullseye.png"
 LOGO = ROOT / "assets" / "logo.png"
-TGA = ROOT / "Quarry" / "Media" / "icon.tga"
+TGA = ROOT / "Mobsweep" / "Media" / "icon.tga"
 
 SIZE = 512
 BG_CENTRE = (44, 92, 60)  # hunter's green

@@ -1,15 +1,15 @@
 ## Interface: 16001
-## Title: Quarry
+## Title: Mobsweep
 ## Notes: Targets and marks the mobs your tracked quest needs you to kill or loot, and tells you when one is near.
 ## Author: bryn-ph
 ## Version: @project-version@
 ## Category: Quests
-## IconTexture: Interface\AddOns\Quarry\Media\icon
-## SavedVariables: QuarryDB
+## IconTexture: Interface\AddOns\Mobsweep\Media\icon
+## SavedVariables: MobsweepDB
 ## OptionalDeps: QuestieDB
-## AddonCompartmentFunc: Quarry_OnAddonCompartmentClick
+## AddonCompartmentFunc: Mobsweep_OnAddonCompartmentClick
 ## X-License: MIT
-## X-Website: https://github.com/bryn-ph/Quarry
+## X-Website: https://github.com/bryn-ph/Mobsweep
 
 Core\Init.lua
 Core\Defaults.lua

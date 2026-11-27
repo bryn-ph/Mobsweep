@@ -38,10 +38,10 @@ local function cleanSettings(saved)
 end
 
 function DB.Init()
-	if type(QuarryDB) ~= "table" then
-		QuarryDB = {}
+	if type(MobsweepDB) ~= "table" then
+		MobsweepDB = {}
 	end
-	local db = QuarryDB
+	local db = MobsweepDB
 	db.version = CURRENT_VERSION
 	db.settings = cleanSettings(db.settings)
 	ns.db = db

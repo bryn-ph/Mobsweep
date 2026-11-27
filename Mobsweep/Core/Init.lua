@@ -4,12 +4,12 @@ ns.name = addonName
 ns.debug = false
 
 function ns.Print(...)
-	print("|cffffd100Quarry|r", ...)
+	print("|cffffd100Mobsweep|r", ...)
 end
 
 function ns.Debug(...)
 	if ns.debug then
-		print("|cff888888Quarry debug|r", ...)
+		print("|cff888888Mobsweep debug|r", ...)
 	end
 end
 
@@ -20,9 +20,9 @@ function ns.IsSecret(value)
 end
 
 -- Key Bindings > AddOns (Bindings.xml).
-BINDING_HEADER_QUARRY = "Quarry"
-_G["BINDING_NAME_CLICK QuarryTrackerButton:LeftButton"] = "Tag quest mob"
-BINDING_NAME_QUARRY_TOGGLE_TRACKING = "Tracking on/off"
+BINDING_HEADER_MOBSWEEP = "Mobsweep"
+_G["BINDING_NAME_CLICK MobsweepTrackerButton:LeftButton"] = "Tag quest mob"
+BINDING_NAME_MOBSWEEP_TOGGLE_TRACKING = "Tracking on/off"
 
 -- Game events -----------------------------------------------------------------
 
@@ -86,11 +86,11 @@ ns.On("ADDON_LOADED", function(_, name)
 end)
 
 -- Referenced by the TOC's AddonCompartmentFunc.
-function Quarry_OnAddonCompartmentClick()
+function Mobsweep_OnAddonCompartmentClick()
 	ns.Window.Toggle()
 end
 
 -- Referenced by Bindings.xml.
-function Quarry_ToggleTracking()
+function Mobsweep_ToggleTracking()
 	ns.Scanner.SetTracking(not ns.settings.tracking)
 end

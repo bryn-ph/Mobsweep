@@ -16,10 +16,10 @@ ns.Limits = {
 	minimapAngle = { 0, 360 },
 }
 
-ns.MACRO_NAME = "Quarry"
+ns.MACRO_NAME = "Mobsweep"
 ns.MACRO_ICON = "Ability_Hunter_SniperShot"
 ns.MACRO_LIMIT = 255 -- characters in a macro body
-ns.TAG_BINDING = "CLICK QuarryTrackerButton:LeftButton" -- Bindings.xml
+ns.TAG_BINDING = "CLICK MobsweepTrackerButton:LeftButton" -- Bindings.xml
 
 ns.PANEL_STYLES = { full = true, minimal = true }
 
