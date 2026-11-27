@@ -1,0 +1,25 @@
+## Interface: 16001
+## Title: Tagger
+## Notes: Targets and marks the mobs your tracked quest needs you to kill or loot, and tells you when one is near.
+## Author: bryn-ph
+## Version: @project-version@
+## Category: Quests
+## IconTexture: Interface\AddOns\Tagger\Media\icon
+## SavedVariables: TaggerDB
+## OptionalDeps: QuestieDB
+## AddonCompartmentFunc: Tagger_OnAddonCompartmentClick
+## X-License: MIT
+## X-Website: https://github.com/bryn-ph/Tagger
+
+Core\Init.lua
+Core\Defaults.lua
+Core\DB.lua
+Core\Targets.lua
+Core\Macro.lua
+Core\Scanner.lua
+UI\Widgets.lua
+UI\TrackerButton.lua
+UI\Window.lua
+Config\MinimapButton.lua
+Config\Slash.lua
+# Bindings.xml is loaded automatically and must not be listed here.

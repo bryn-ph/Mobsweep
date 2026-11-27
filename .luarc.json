@@ -1,0 +1,13 @@
+{
+    "$schema": "https://raw.githubusercontent.com/LuaLS/vscode-lua/master/setting/schema.json",
+    "runtime.version": "Lua 5.1",
+    "workspace.ignoreDir": [".venv", ".release", "tests"],
+    "diagnostics.globals": [
+        "TaggerDB",
+        "SLASH_TAGGER1",
+        "Tagger_OnAddonCompartmentClick",
+        "TaggerMinimapButton",
+        "Tagger_ToggleTracking",
+        "LibQuestieDB"
+    ]
+}
