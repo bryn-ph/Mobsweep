@@ -1,5 +1,5 @@
--- Tagger's window: its few settings, the tracked quest's mobs and a button to put the macro on your bars.
--- Opened from the minimap icon, /tagger, or the launcher in the game's Settings > AddOns.
+-- Quarry's window: its few settings, the tracked quest's mobs and a button to put the macro on your bars.
+-- Opened from the minimap icon, /quarry, or the launcher in the game's Settings > AddOns.
 local _, ns = ...
 
 local Window = {}
@@ -181,13 +181,13 @@ end
 -- Window -----------------------------------------------------------------------------------------
 
 local function create()
-	win = W.Window("TaggerWindow", "Tagger", WIDTH, HEIGHT)
+	win = W.Window("QuarryWindow", "Quarry", WIDTH, HEIGHT)
 	win:SetPoint("CENTER")
 
 	local version = W.Text(win, "GameFontDisableSmall")
 	version:SetPoint("TOPRIGHT", -14, -34)
 	version:SetJustifyH("RIGHT")
-	version:SetText("Tagger " .. W.Version())
+	version:SetText("Quarry " .. W.Version())
 
 	-- Targeting
 	section("Targeting", -62)
@@ -280,10 +280,10 @@ function Window.Register()
 	local launcher = CreateFrame("Frame")
 	local title = launcher:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
 	title:SetPoint("TOPLEFT", 16, -16)
-	title:SetText("Tagger")
-	local open = W.Button(launcher, "Open Tagger", 180, 24)
+	title:SetText("Quarry")
+	local open = W.Button(launcher, "Open Quarry", 180, 24)
 	open:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -12)
 	open:SetScript("OnClick", function() Window.Show() end)
-	local category = Settings.RegisterCanvasLayoutCategory(launcher, "Tagger")
+	local category = Settings.RegisterCanvasLayoutCategory(launcher, "Quarry")
 	Settings.RegisterAddOnCategory(category)
 end

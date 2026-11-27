@@ -5,7 +5,7 @@ import pathlib, sys
 from lupa import lua51
 
 root = pathlib.Path(__file__).resolve().parents[1]
-addon = root / "Tagger"
+addon = root / "Quarry"
 lua = lua51.LuaRuntime(unpack_returned_tuples=True)
 
 
@@ -215,18 +215,18 @@ __QuestieDB = {
 """
 
 lua.execute(MOCK)
-toc = (addon / "Tagger.toc").read_text(encoding="utf-8")
+toc = (addon / "Quarry.toc").read_text(encoding="utf-8")
 files = [l.strip() for l in toc.splitlines() if l.strip() and not l.startswith("#")]
 ns = lua.eval("{}")
 for f in files:
     path = addon / f.replace("\\", "/")
     chunk = lua.eval("function(src, name) return assert(loadstring(src, name)) end")(path.read_text(encoding="utf-8"), "@" + f)
-    chunk("Tagger", ns)
+    chunk("Quarry", ns)
 
 run = lua.eval(r"""function(ns)
   local ef = __frames[1]
   local function fire(event, ...) ef.__scripts.OnEvent(ef, event, ...) end
-  local function body() local m = __macros[GetMacroIndexByName("Tagger")]; return m and m.body end
+  local function body() local m = __macros[GetMacroIndexByName("Quarry")]; return m and m.body end
   local function printedSince(n, pattern)
     for i = n + 1, #__printed do if __printed[i]:find(pattern, 1, true) then return true end end
   end
@@ -238,14 +238,14 @@ run = lua.eval(r"""function(ns)
   local function settle() __flush(1) end
   local TAIL = "\n/cleartarget [dead]\n/tm [harm,nodead] !8"
 
-  TaggerDB = { settings = { enabled = false, announce = true, trackedOnly = true, marker = 8, alertSound = false } } -- from an older version
-  fire("ADDON_LOADED", "Tagger")
+  QuarryDB = { settings = { enabled = false, announce = true, trackedOnly = true, marker = 8, alertSound = false } } -- from an older version
+  fire("ADDON_LOADED", "Quarry")
   assert(ns.settings.enabled == nil and ns.settings.announce == nil and ns.settings.trackedOnly == nil, "old settings dropped")
   assert(ns.settings.alertSound == "none" and ns.settings.panelStyle == "full", "sound off carried over; full panel")
   ns.settings.alertSound = "ping"
   fire("PLAYER_LOGIN")
   assert(ns.settings.marker == 8 and not ns.settings.tracking, "settings loaded")
-  local button, panel = _G.TaggerTrackerButton, _G.TaggerTracker
+  local button, panel = _G.QuarryTrackerButton, _G.QuarryTracker
   assert(button and button.__template == "SecureActionButtonTemplate" and button:GetAttribute("type") == "macro", "secure button")
   assert(panel:IsShown(), "Tracking panel shown")
 
@@ -334,11 +334,11 @@ run = lua.eval(r"""function(ns)
   assert(__edits == edits, "unchanged list doesn't rewrite the macro")
 
   -- Marker choice and off.
-  SlashCmdList.TAGGER("mark 7")
+  SlashCmdList.QUARRY("mark 7")
   assert(body():find("!7$"), "cross marker")
-  SlashCmdList.TAGGER("mark off")
+  SlashCmdList.QUARRY("mark off")
   assert(not body():find("/tm", 1, true) and body():find("/cleartarget [dead]", 1, true), "no marking")
-  SlashCmdList.TAGGER("mark 8")
+  SlashCmdList.QUARRY("mark 8")
 
   -- Fitting: long lists are cut to 255 characters, best first and last.
   local list = {}
@@ -358,7 +358,7 @@ run = lua.eval(r"""function(ns)
     nameplate3 = { name = "Defias Bandit", guid = "g3", friendly = true },
   }
   __plates = { "nameplate1", "nameplate2", "nameplate3" }
-  SlashCmdList.TAGGER("track")
+  SlashCmdList.QUARRY("track")
   assert(ns.settings.tracking and __tickers == 1, "tracking ticks")
   assert(printedSince(before, "nameplates are off"), "warns about nameplates")
   local st = ns.Scanner.State()
@@ -395,11 +395,11 @@ run = lua.eval(r"""function(ns)
   for _, f in ipairs(__frames) do
     if f.label and f.label:GetText() == "Tracking" then toggleBox = f end
   end
-  SlashCmdList.TAGGER("style")
+  SlashCmdList.QUARRY("style")
   assert(ns.settings.panelStyle == "minimal" and not toggleBox:IsShown(), "minimal hides the toggle")
   assert(panel.__bg[4] == 0 and panel.__edge[4] == 0, "no box")
   button.__scripts.OnEnter(button)
-  local card = _G.TaggerTrackerCard
+  local card = _G.QuarryTrackerCard
   assert(card and card:IsShown(), "hover opens the card")
   assert(card.state:GetText() == "On" and card.status:GetText() == "Kobold Worker nearby", "card: " .. card.status:GetText())
   assert(card.quest:GetText() == "Gold Dust Exchange", "card names the quest")
@@ -431,7 +431,7 @@ run = lua.eval(r"""function(ns)
   ns.TrackerButton.ResetPosition()
 
   __combat = true
-  SlashCmdList.TAGGER("style")
+  SlashCmdList.QUARRY("style")
   assert(not toggleBox:IsShown(), "style waits for combat to end")
   __combat = false
   fire("PLAYER_REGEN_ENABLED")
@@ -448,20 +448,20 @@ run = lua.eval(r"""function(ns)
   assert(ns.settings.tracking and not button.icon.__desat, "on again")
 
   -- Minimap right-click and the binding toggle Tracking.
-  _G.TaggerMinimapButton.__scripts.OnClick(_G.TaggerMinimapButton, "RightButton")
+  _G.QuarryMinimapButton.__scripts.OnClick(_G.QuarryMinimapButton, "RightButton")
   assert(not ns.settings.tracking and __tickers == 0 and not ns.Scanner.State().tracking, "right-click stops tracking")
-  Tagger_ToggleTracking()
+  Quarry_ToggleTracking()
   assert(ns.settings.tracking and __tickers == 1, "binding starts it")
-  Tagger_ToggleTracking()
+  Quarry_ToggleTracking()
 
   -- The panel can't be hidden in combat.
   __combat = true
-  SlashCmdList.TAGGER("button")
+  SlashCmdList.QUARRY("button")
   assert(panel:IsShown(), "panel waits for combat to end")
   __combat = false
   fire("PLAYER_REGEN_ENABLED")
   assert(not panel:IsShown(), "then hides")
-  SlashCmdList.TAGGER("button")
+  SlashCmdList.QUARRY("button")
   assert(panel:IsShown(), "and comes back")
 
   -- Deleted in /macro: made again on the next change.
@@ -487,18 +487,18 @@ run = lua.eval(r"""function(ns)
   assert(#__macros == 1 and not __macros[1].perChar, "falls back to an account macro")
 
   -- Window.
-  SlashCmdList.TAGGER("")
-  assert(_G.TaggerWindow:IsShown(), "window opens")
+  SlashCmdList.QUARRY("")
+  assert(_G.QuarryWindow:IsShown(), "window opens")
   local shown = 0
   for _, f in ipairs(__frames) do
     if f.name and f.quest and f:IsShown() then shown = shown + 1 end
   end
   assert(shown == #ns.Macro.Current() and shown > 0, "a row per target")
   -- Alert sound dropdown: lists the sounds, picking one saves and plays it.
-  local sound = _G.TaggerWindow.sound
+  local sound = _G.QuarryWindow.sound
   assert(sound.Text:GetText() == "Map ping", "shows the current sound")
   sound:Click()
-  local menu = _G.TaggerMenu
+  local menu = _G.QuarryMenu
   assert(menu:IsShown(), "menu opens")
   local pick
   for _, row in ipairs(menu.rows) do
@@ -512,15 +512,15 @@ run = lua.eval(r"""function(ns)
   sound:Click()
   assert(not menu:IsShown(), "second click closes it")
   sound:Click()
-  _G.TaggerWindow:Hide()
+  _G.QuarryWindow:Hide()
   assert(not menu:IsShown(), "closing the window closes the menu")
-  SlashCmdList.TAGGER("")
-  _G.TaggerWindow.style.buttons[2]:Click()
+  SlashCmdList.QUARRY("")
+  _G.QuarryWindow.style.buttons[2]:Click()
   assert(ns.settings.panelStyle == "minimal", "style from the window")
-  _G.TaggerWindow.style.buttons[1]:Click()
+  _G.QuarryWindow.style.buttons[1]:Click()
 
   -- The Tag key: click, press a key; Esc cancels; right-click clears; a key's old action is reported.
-  local bind = _G.TaggerWindow.bind
+  local bind = _G.QuarryWindow.bind
   assert(bind:GetText():find("Not bound", 1, true), "starts unbound")
   bind:Click()
   assert(bind.capturing and bind:GetText() == "Press a key...", "capturing")
@@ -547,17 +547,17 @@ run = lua.eval(r"""function(ns)
   assert(not bind.capturing, "not in combat")
   __combat = false
   bind:Click()
-  _G.TaggerWindow:Hide()
+  _G.QuarryWindow:Hide()
   assert(not bind.capturing, "closing the window stops capturing")
-  SlashCmdList.TAGGER("")
+  SlashCmdList.QUARRY("")
 
-  SlashCmdList.TAGGER("pickup")
-  assert(__picked == "Tagger", "pickup puts the macro on the cursor")
-  SlashCmdList.TAGGER("minimap")
-  assert(not _G.TaggerMinimapButton:IsShown(), "/tagger minimap hides it")
-  SlashCmdList.TAGGER("list")
-  SlashCmdList.TAGGER("help")
-  SlashCmdList.TAGGER("reset")
+  SlashCmdList.QUARRY("pickup")
+  assert(__picked == "Quarry", "pickup puts the macro on the cursor")
+  SlashCmdList.QUARRY("minimap")
+  assert(not _G.QuarryMinimapButton:IsShown(), "/quarry minimap hides it")
+  SlashCmdList.QUARRY("list")
+  SlashCmdList.QUARRY("help")
+  SlashCmdList.QUARRY("reset")
   assert(ns.settings.minimapShow and ns.settings.showButton and not ns.settings.tracking, "reset restores defaults")
 end""")
 

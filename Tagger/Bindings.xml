@@ -1,8 +1,0 @@
-<Bindings>
-	<!-- Auto-loaded by the client. Labels (BINDING_HEADER_TAGGER / BINDING_NAME_*) are set in Core/Init.lua. -->
-	<!-- CLICK bindings send both key-down and key-up "clicks" to the secure button. -->
-	<Binding name="CLICK TaggerTrackerButton:LeftButton" header="TAGGER" category="ADDONS"/>
-	<Binding name="TAGGER_TOGGLE_TRACKING" category="ADDONS">
-		Tagger_ToggleTracking()
-	</Binding>
-</Bindings>

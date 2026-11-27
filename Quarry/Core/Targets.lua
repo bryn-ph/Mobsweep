@@ -58,7 +58,7 @@ end
 
 -- Quest log --------------------------------------------------------------------------
 
--- The quest Tagger works on: the focused (super-tracked) one, or failing that the first unfinished quest
+-- The quest Quarry works on: the focused (super-tracked) one, or failing that the first unfinished quest
 -- on the objective tracker. Returns { id, title, complete } or nil.
 function Targets.Quest()
 	local QL = C_QuestLog

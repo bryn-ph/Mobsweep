@@ -141,7 +141,7 @@ local menu
 local MENU_ROW_H, MENU_MIN_W, MENU_PAD = 20, 140, 26
 
 local function createMenu()
-	menu = CreateFrame("Frame", "TaggerMenu", UIParent, "BackdropTemplate")
+	menu = CreateFrame("Frame", "QuarryMenu", UIParent, "BackdropTemplate")
 	menu:SetFrameStrata("FULLSCREEN_DIALOG")
 	menu:SetBackdrop({
 		bgFile = "Interface\\Buttons\\WHITE8x8",
@@ -154,7 +154,7 @@ local function createMenu()
 	menu:EnableMouse(true)
 	menu:Hide()
 	menu.rows = {}
-	table.insert(UISpecialFrames, "TaggerMenu") -- Esc closes it
+	table.insert(UISpecialFrames, "QuarryMenu") -- Esc closes it
 	-- Close on a click outside. A click on the button that opened it is left to that button, which
 	-- toggles: closing here first would make its click reopen the menu.
 	menu:SetScript("OnEvent", function(self)

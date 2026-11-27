@@ -38,10 +38,10 @@ local function cleanSettings(saved)
 end
 
 function DB.Init()
-	if type(TaggerDB) ~= "table" then
-		TaggerDB = {}
+	if type(QuarryDB) ~= "table" then
+		QuarryDB = {}
 	end
-	local db = TaggerDB
+	local db = QuarryDB
 	db.version = CURRENT_VERSION
 	db.settings = cleanSettings(db.settings)
 	ns.db = db

@@ -4,12 +4,12 @@ ns.name = addonName
 ns.debug = false
 
 function ns.Print(...)
-	print("|cffffd100Tagger|r", ...)
+	print("|cffffd100Quarry|r", ...)
 end
 
 function ns.Debug(...)
 	if ns.debug then
-		print("|cff888888Tagger debug|r", ...)
+		print("|cff888888Quarry debug|r", ...)
 	end
 end
 
@@ -20,9 +20,9 @@ function ns.IsSecret(value)
 end
 
 -- Key Bindings > AddOns (Bindings.xml).
-BINDING_HEADER_TAGGER = "Tagger"
-_G["BINDING_NAME_CLICK TaggerTrackerButton:LeftButton"] = "Tag quest mob"
-BINDING_NAME_TAGGER_TOGGLE_TRACKING = "Tracking on/off"
+BINDING_HEADER_QUARRY = "Quarry"
+_G["BINDING_NAME_CLICK QuarryTrackerButton:LeftButton"] = "Tag quest mob"
+BINDING_NAME_QUARRY_TOGGLE_TRACKING = "Tracking on/off"
 
 -- Game events -----------------------------------------------------------------
 
@@ -86,11 +86,11 @@ ns.On("ADDON_LOADED", function(_, name)
 end)
 
 -- Referenced by the TOC's AddonCompartmentFunc.
-function Tagger_OnAddonCompartmentClick()
+function Quarry_OnAddonCompartmentClick()
 	ns.Window.Toggle()
 end
 
 -- Referenced by Bindings.xml.
-function Tagger_ToggleTracking()
+function Quarry_ToggleTracking()
 	ns.Scanner.SetTracking(not ns.settings.tracking)
 end
