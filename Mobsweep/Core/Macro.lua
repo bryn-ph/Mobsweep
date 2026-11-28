@@ -1,38 +1,52 @@
--- The Mobsweep macro, after RestedXP's targeting macro: clear the target, a /targetexact line for each
--- wanted mob (the most wanted last, so it wins when several are in range), drop a corpse, then mark what
--- it found. Clearing first means it never ends up on (or marks) whatever you had targeted before.
--- "/tm !N" leaves a mob that already has that marker alone instead of toggling it off.
--- The same text drives the Tracking panel's button. Macros and secure attributes can't be changed in
--- combat, so changes made then wait for PLAYER_REGEN_ENABLED.
+-- Mobsweep's targeting text, after RestedXP's targeting macro. The Tag button runs it (its macrotext):
+--   /cleartarget
+--   /targetexact [noexists][dead] Best Mob      one line per wanted mob, best first
+--   /targetexact [noexists][dead] Next Mob
+--   /cleartarget [dead]
+--   /tm [harm,nodead] !8
+-- Each /targetexact only runs while there's no live target yet, so the first live match wins, and a corpse
+-- (often the nearest of a type you've just killed) falls through to the next type. Clearing first means it
+-- never ends up on, or marks, whatever you had targeted before. "/tm !N" leaves a mob that already has that
+-- marker alone instead of toggling it off.
+-- While Tracking is on and you're out of combat, the types nearest you go first (Scanner.Nearby), so the
+-- closest type wins rather than a fixed favourite.
+-- The bar macro is just "/click MobsweepTrackerButton", so it never needs editing and the 255-character
+-- macro limit doesn't apply. Secure attributes and macros can't be changed in combat; changes made then
+-- wait for PLAYER_REGEN_ENABLED.
 local _, ns = ...
 
 local Macro = {}
 ns.Macro = Macro
 
-local current = {} -- the last Targets.Collect(), each entry with .inMacro
+local current = {} -- the last Targets.Collect(), in its own order (.base), each entry with .inMacro
 local quest -- the quest it came from (Targets.Quest())
-local body = nil -- the current text
-local lastBody -- what we last wrote (or found there)
+local text -- the button's current text
+local lastText -- what the button was last given
+local macroOK = false -- the bar macro exists and holds MACRO_BODY
 local ready = false -- macros are loaded; set shortly after the first loading screen
 local queued = false
 local warnedFull = false
 
 Macro.EMPTY = "# Mobsweep: no quest mobs"
 
--- The macro text for `list` (best first), fitted to the macro limit. marker: raid target index, or nil
--- for no marking. Sets .inMacro on each entry. Returns the body and how many mobs made it in.
 local HEAD = "/cleartarget"
+local TARGET = "/targetexact [noexists][dead] "
+local NOT_NEAR = 99
 
-function Macro.Body(list, marker)
+-- The text for `list` (best first), fitted to `limit` characters (ns.TEXT_LIMIT if not given). marker:
+-- raid target index, or nil for no marking. Sets .inMacro on each entry. Returns the text and how many
+-- mobs made it in.
+function Macro.Body(list, marker, limit)
+	limit = limit or ns.TEXT_LIMIT
 	local tail = "/cleartarget [dead]"
 	if marker then tail = tail .. "\n/tm [harm,nodead] !" .. marker end
 	local lines, used = {}, #HEAD + 1 + #tail
 	for _, t in ipairs(list) do
-		local line = "/targetexact " .. t.name
-		t.inMacro = used + #line + 1 <= ns.MACRO_LIMIT
+		local line = TARGET .. t.name
+		t.inMacro = used + #line + 1 <= limit
 		if t.inMacro then
 			used = used + #line + 1
-			table.insert(lines, 1, line)
+			table.insert(lines, line)
 		end
 	end
 	local count = #lines
@@ -42,7 +56,20 @@ function Macro.Body(list, marker)
 	return table.concat(lines, "\n"), count
 end
 
--- Writing --------------------------------------------------------------------------------------
+-- `current`, nearest types first (Scanner.Nearby), otherwise in its own order.
+local function ordered()
+	local near = ns.Scanner.Nearby()
+	local list = {}
+	for i, t in ipairs(current) do list[i] = t end
+	table.sort(list, function(a, b)
+		local na, nb = near[a.name] or NOT_NEAR, near[b.name] or NOT_NEAR
+		if na ~= nb then return na < nb end
+		return a.base < b.base
+	end)
+	return list
+end
+
+-- The bar macro ------------------------------------------------------------------------------------
 
 local function room()
 	local numAccount, numChar = GetNumMacros()
@@ -51,13 +78,13 @@ local function room()
 	return (numAccount or 0) < maxAccount, false
 end
 
--- Puts `body` in the macro, making it first (per character if there's room) if it's missing.
--- Returns whether the macro now holds it.
-local function write(body)
+-- Makes sure the bar macro exists (per character if there's room) and holds MACRO_BODY.
+-- Returns whether it does.
+local function writeMacro()
 	local index = GetMacroIndexByName(ns.MACRO_NAME)
 	if index and index > 0 then
 		local _, _, old = GetMacroInfo(index)
-		if old ~= body then EditMacro(index, ns.MACRO_NAME, nil, body) end
+		if old ~= ns.MACRO_BODY then EditMacro(index, ns.MACRO_NAME, nil, ns.MACRO_BODY) end
 		return true
 	end
 	local fits, perChar = room()
@@ -68,7 +95,7 @@ local function write(body)
 		end
 		return false
 	end
-	local ok, err = pcall(CreateMacro, ns.MACRO_NAME, ns.MACRO_ICON, body, perChar)
+	local ok, err = pcall(CreateMacro, ns.MACRO_NAME, ns.MACRO_ICON, ns.MACRO_BODY, perChar)
 	if not ok then
 		ns.Debug("CreateMacro failed:", err)
 		return false
@@ -77,21 +104,26 @@ local function write(body)
 	return true
 end
 
--- Rebuilds the list and writes the macro (and the Tracking button) if it changed.
+-- Updating -------------------------------------------------------------------------------------------
+
+-- Gives the Tag button its text for the current list, in the current order, if that changed.
+-- Out of combat only; in combat it waits for the update PLAYER_REGEN_ENABLED queues.
+function Macro.Apply()
+	if not ready then return end
+	text = Macro.Body(ordered(), ns.settings.mark and ns.settings.marker or nil)
+	if text == lastText or InCombatLockdown() then return end
+	ns.TrackerButton.SetMacroText(text)
+	lastText = text
+end
+
+-- Rebuilds the list and updates the button and the bar macro.
 function Macro.Update()
 	queued = false
 	if not ready then return end
 	current, quest = ns.Targets.Collect()
-	body = Macro.Body(current, ns.settings.mark and ns.settings.marker or nil)
-	if body ~= lastBody then
-		if InCombatLockdown() then
-			ns.Debug("in combat; macro update waits")
-		else
-			write(body)
-			ns.TrackerButton.SetMacroText(body)
-			lastBody = body
-		end
-	end
+	for i, t in ipairs(current) do t.base = i end
+	Macro.Apply()
+	if not macroOK and not InCombatLockdown() then macroOK = writeMacro() end
 	ns.Fire("TARGETS_CHANGED", current)
 end
 
@@ -104,7 +136,8 @@ end
 
 -- After a settings change: rebuild now.
 function Macro.Refresh()
-	lastBody = nil
+	lastText = nil
+	macroOK = false
 	Macro.Update()
 end
 
@@ -117,8 +150,9 @@ function Macro.Quest()
 	return quest
 end
 
+-- The Tag button's text.
 function Macro.Text()
-	return body
+	return text
 end
 
 function Macro.Exists()
@@ -126,7 +160,7 @@ function Macro.Exists()
 	return index ~= nil and index > 0
 end
 
--- Puts the macro on the cursor, to drop on an action bar (making it first if need be).
+-- Puts the bar macro on the cursor, to drop on an action bar (making it first if need be).
 function Macro.Pickup()
 	if InCombatLockdown() then
 		ns.Print("Not in combat.")
@@ -144,8 +178,8 @@ function Macro.Init()
 		"ZONE_CHANGED_NEW_AREA", "PLAYER_REGEN_ENABLED" }) do
 		ns.On(event, function() Macro.Queue() end)
 	end
-	-- Edited or deleted in /macro: compare with what's really there next time.
-	ns.On("UPDATE_MACROS", function() lastBody = nil end)
+	-- Edited or deleted in /macro: check it again on the next update.
+	ns.On("UPDATE_MACROS", function() macroOK = false end)
 	ns.On("PLAYER_ENTERING_WORLD", function()
 		if ready then
 			Macro.Queue()

@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.1.1-beta
+
+- The Tag button now goes for the nearest quest mob type when Tracking is on, instead of always the same one.
+- Fixed: tagging could come up empty after a kill, when the nearest mob of a type was the corpse.
+- Fixed: with lots of mob types (loot quests), some could be left out.
+- The Mobsweep macro now just presses the Tag button, so the two always match.
+
 ## v0.1.0-beta
 
 First beta.

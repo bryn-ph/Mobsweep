@@ -29,13 +29,19 @@ How it fits together:
   - With QuestieDB loaded, `LibQuestieDB` (its public library, contract 4) gives each quest's creature and kill-credit objectives, and `npcDrops` for item objectives. Its spawn data decides "in your zone".
   - Without it, kill objectives are parsed from the quest log text and loot quests are skipped.
   - Objectives the log shows as finished are left out, matched by name.
-- `Macro` builds the text: `/cleartarget`, a `/targetexact` line per mob (most wanted last so it wins), `/cleartarget [dead]`, then `/tm [harm,nodead] !N`. It's cut to fit 255 characters.
+- `Macro` builds the text: `/cleartarget`, a `/targetexact [noexists][dead] <name>` line per mob (best first), `/cleartarget [dead]`, then `/tm [harm,nodead] !N`.
+  - Each `/targetexact` only runs while there's no live target yet (`/targetexact` takes macro conditionals; it goes through `SecureCmdOptionParse`). So the first live match wins, and a corpse, often the nearest of a type you've just killed, falls through to the next type.
   - Clearing first means it never keeps, or marks, a non-quest target you had before.
+  - "Best" is the quest's own order, except that while Tracking is on and you're out of combat, the types nearest you go first (`Scanner.Nearby`).
   - `/tm !N` (Forever's `TARGET_MARKER` handler) skips a unit that already has that marker, so pressing again never clears it.
-- The text goes to two places: the `Mobsweep` macro, and the `macrotext` of `MobsweepTrackerButton` (a `SecureActionButtonTemplate` on the Tracking panel, bindable as a `CLICK` binding). Its right-click is the custom type `tracking` (`type2`), which the template runs as the button's `tracking` method, as Jest's `jest` type does. Both are only changed out of combat, and only when the text changes.
-  - The macro is per character if there's room, otherwise account-wide. Nothing is written until 2 seconds after the first loading screen, so macros have loaded and no duplicate gets made.
+- The text is the `macrotext` of `MobsweepTrackerButton` (a `SecureActionButtonTemplate` on the Tracking panel, bindable as a `CLICK` binding), run by `C_Macro.RunMacroText`. It isn't held to a macro's 255 characters (`ns.TEXT_LIMIT` caps it at 1023). It's only changed out of combat, and only when it differs.
+  - The button's right-click is the custom type `tracking` (`type2`), which the template runs as the button's `tracking` method, as Jest's `jest` type does.
+  - It acts on mouse up (`useOnKeyDown` false; see `SecureActionButton_OnClick` in `Blizzard_FrameXML/SecureTemplates.lua`), which also lets a drag move the panel without firing it.
+- The `Mobsweep` bar macro is just `/click MobsweepTrackerButton` (`/click` sends an up click by default), so it never changes with the list.
+  - It's per character if there's room, otherwise account-wide. Nothing is written until 2 seconds after the first loading screen, so macros have loaded and no duplicate gets made.
+  - "Show panel" off makes the panel invisible and click-through rather than hidden, so `/click` and the key binding always have a shown button to press.
 - Addons can't target or set raid markers themselves on Forever (or run a macro on a timer). The player's click or key press does it. RXP's `TargetUnit` proximity trick is off on modern clients too.
-- `Scanner` (Tracking) is report-only: once a second, and on `NAME_PLATE_UNIT_ADDED` and `RAID_TARGET_UPDATE`, it reads enemy nameplates, target and mouseover for a live, attackable mob on the list. It raises `SCAN_UPDATE`, which the panel uses for its status and glow. Alerts go to `UIErrorsFrame`, where quest progress shows: "nearby" (with the chosen sound from `ns.SOUNDS`, at most every 30 seconds per name) and "marked" (once per GUID).
+- `Scanner` (Tracking) is report-only: once a second, and on `NAME_PLATE_UNIT_ADDED` and `RAID_TARGET_UPDATE`, it reads enemy nameplates, target and mouseover for a live, attackable mob on the list. It raises `SCAN_UPDATE`, which the panel uses for its status and glow. Out of combat it also sorts the types in view by distance (`CheckInteractDistance` 3 and 4, about 10 and 28 yards; the game only answers that for enemies out of combat) and, when the nearest changes, has `Macro.Apply` reorder the button. Alerts go to `UIErrorsFrame`, where quest progress shows: "nearby" (with the chosen sound from `ns.SOUNDS`, at most every 30 seconds per name) and "marked" (once per GUID).
 
 The source of truth for Blizzard's side is the `forever` branch of [Gethe/wow-ui-source](https://github.com/Gethe/wow-ui-source).
 
