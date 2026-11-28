@@ -78,6 +78,9 @@ function Obj:SetAttribute(k, v) self.__attrs = self.__attrs or {}; self.__attrs[
 function Obj:GetAttribute(k) return self.__attrs and self.__attrs[k] end
 function Obj:SetTexture(t) self.__texture = t end
 function Obj:SetDesaturated(v) self.__desat = v end
+function Obj:SetAlpha(a) self.__alpha = a end
+function Obj:GetAlpha() return self.__alpha or 1 end
+function Obj:EnableMouse(v) self.__mouse = v end
 function Obj:SetBackdropColor(r, g, b, a) self.__bg = { r, g, b, a } end
 function Obj:SetBackdropBorderColor(r, g, b, a) self.__edge = { r, g, b, a } end
 
@@ -140,6 +143,16 @@ function SaveBindings() __saved = __saved + 1 end
 function IsAltKeyDown() return false end
 function IsControlKeyDown() return false end
 function IsShiftKeyDown() return __shift end
+
+-- Distances to units, in yards, for CheckInteractDistance (3 is about 10 yards, 4 about 28).
+__dist = {}
+__distCalls = 0
+function CheckInteractDistance(u, index)
+  assert(not __combat, "CheckInteractDistance on an enemy in combat")
+  __distCalls = __distCalls + 1
+  local reach = ({ [3] = 10, [4] = 28 })[index] or 0
+  return (__dist[u] or 100) <= reach
+end
 
 -- Combat
 __combat = false
@@ -226,7 +239,9 @@ for f in files:
 run = lua.eval(r"""function(ns)
   local ef = __frames[1]
   local function fire(event, ...) ef.__scripts.OnEvent(ef, event, ...) end
-  local function body() local m = __macros[GetMacroIndexByName("Mobsweep")]; return m and m.body end
+  local function body() return _G.MobsweepTrackerButton:GetAttribute("macrotext") end
+  local function barMacro() local m = __macros[GetMacroIndexByName("Mobsweep")]; return m and m.body end
+  local T = "/targetexact [noexists][dead] "
   local function printedSince(n, pattern)
     for i = n + 1, #__printed do if __printed[i]:find(pattern, 1, true) then return true end end
   end
@@ -269,6 +284,7 @@ run = lua.eval(r"""function(ns)
   -- Nothing tracked: no quest, empty macro.
   assert(ns.Macro.Quest() == nil and body() == ns.Macro.EMPTY, "nothing tracked")
   assert(__macros[1].perChar, "macro made per character")
+  assert(barMacro() == "/click MobsweepTrackerButton", "the bar macro clicks the Tag button")
 
   -- A tracked quest, without QuestieDB: its kill objectives, from the log text.
   __watched[10] = true
@@ -276,8 +292,7 @@ run = lua.eval(r"""function(ns)
   fire("QUEST_WATCH_LIST_CHANGED")
   settle()
   assert(ns.Macro.Quest().id == 10, "the tracked quest")
-  assert(body() == "/cleartarget\n/targetexact Kobold Vermin" .. TAIL, "kill-only body: " .. tostring(body()))
-  assert(button:GetAttribute("macrotext") == body(), "button runs the same text")
+  assert(body() == "/cleartarget\n" .. T .. "Kobold Vermin" .. TAIL, "kill-only body: " .. tostring(body()))
 
   -- The focused quest wins, and with QuestieDB its loot drops count; this zone first, most wanted last.
   LibQuestieDB = __QuestieDB
@@ -287,7 +302,8 @@ run = lua.eval(r"""function(ns)
   assert(ns.Macro.Quest().id == 11, "focused quest")
   assert(names() == "Kobold Worker,Defias Bandit", "only the focused quest's mobs: " .. names())
   assert(ns.Macro.Current()[1].kind == "loot" and ns.Macro.Current()[2].here == false, "kinds and zones")
-  assert(body() == "/cleartarget\n/targetexact Defias Bandit\n/targetexact Kobold Worker" .. TAIL, "body: " .. body())
+  assert(body() == "/cleartarget\n" .. T .. "Kobold Worker\n" .. T .. "Defias Bandit" .. TAIL,
+    "best first, each only while there's no live target: " .. body())
 
   -- No focus: the first unfinished quest in tracker order.
   __super = 0
@@ -327,11 +343,24 @@ run = lua.eval(r"""function(ns)
   settle()
   assert(body():find("Kobold Worker", 1, true) and button:GetAttribute("macrotext") == body(), "edited after combat")
 
-  -- No needless edits.
+  -- No needless edits: the bar macro never changes with the list.
   local edits = __edits
   fire("QUEST_LOG_UPDATE")
   settle()
-  assert(__edits == edits, "unchanged list doesn't rewrite the macro")
+  __quests[2].objectives[1].finished = true
+  fire("QUEST_LOG_UPDATE")
+  settle()
+  __quests[2].objectives[1].finished = false
+  fire("QUEST_LOG_UPDATE")
+  settle()
+  assert(__edits == edits, "list changes don't touch the bar macro")
+
+  -- A bar macro from an older version (the whole list) is replaced.
+  __macros[GetMacroIndexByName("Mobsweep")].body = "/targetexact Old Text"
+  fire("UPDATE_MACROS")
+  fire("QUEST_LOG_UPDATE")
+  settle()
+  assert(barMacro() == ns.MACRO_BODY, "old bar macro replaced")
 
   -- Marker choice and off.
   SlashCmdList.MOBSWEEP("mark 7")
@@ -340,14 +369,22 @@ run = lua.eval(r"""function(ns)
   assert(not body():find("/tm", 1, true) and body():find("/cleartarget [dead]", 1, true), "no marking")
   SlashCmdList.MOBSWEEP("mark 8")
 
-  -- Fitting: long lists are cut to 255 characters, best first and last.
+  -- Fitting: long lists are cut to the limit, best kept and first.
   local list = {}
-  for i = 1, 20 do list[i] = { name = ("Mob Number %02d With A Long Name"):format(i) } end
-  local b, count = ns.Macro.Body(list, 8)
-  assert(#b <= 255 and count > 0 and count < 20, "fits: " .. #b .. " chars, " .. count .. " mobs")
-  assert(list[1].inMacro and not list[20].inMacro, "best ones kept")
-  assert(b:match("^/cleartarget\n"), "clears the old target first")
-  assert(b:match("([^\n]*)\n/cleartarget %[dead%]") == "/targetexact " .. list[1].name, "the best is last")
+  for i = 1, 40 do list[i] = { name = ("Mob Number %02d With A Long Name"):format(i) } end
+  local b, count = ns.Macro.Body(list, 8, 255)
+  assert(#b <= 255 and count > 0 and count < 40, "fits 255: " .. #b .. " chars, " .. count .. " mobs")
+  assert(list[1].inMacro and not list[40].inMacro, "best ones kept")
+  assert(b:match("^/cleartarget\n([^\n]*)") == T .. list[1].name, "clears the old target, then the best")
+  b, count = ns.Macro.Body(list, 8)
+  assert(#b <= ns.TEXT_LIMIT and count > 6 and count < 40, "the button holds far more: " .. count)
+  -- The six Wrathtail naga that drop Wrathtail Head (The Zoram Strand) all fit, with room to spare.
+  local naga = {}
+  for _, n in ipairs({ "Myrmidon", "Razortail", "Wave Rider", "Sea Witch", "Sorceress", "Priestess" }) do
+    naga[#naga + 1] = { name = "Wrathtail " .. n }
+  end
+  b, count = ns.Macro.Body(naga, 8)
+  assert(count == 6, "all six naga")
 
   -- Tracking: nameplates, alerts, glow, the marked alert.
   __cvars.nameplateShowEnemies = "0"
@@ -447,22 +484,55 @@ run = lua.eval(r"""function(ns)
   button:tracking()
   assert(ns.settings.tracking and not button.icon.__desat, "on again")
 
+  -- Nearest first: out of combat, the type nearest you goes first on the Tag button.
+  __units = {
+    nameplate1 = { name = "Kobold Worker", guid = "k1" },
+    nameplate3 = { name = "Defias Bandit", guid = "d1" },
+  }
+  __plates = { "nameplate1", "nameplate3" }
+  __dist = { nameplate1 = 25, nameplate3 = 8 }
+  ns.Scanner.Scan()
+  assert(ns.Scanner.Nearby()["Defias Bandit"] == 1 and ns.Scanner.Nearby()["Kobold Worker"] == 2, "distance buckets")
+  assert(body():match("^/cleartarget\n([^\n]*)") == T .. "Defias Bandit", "nearest type first: " .. body())
+  assert(ns.Scanner.State().found == "Defias Bandit", "the panel names the nearest")
+  -- In combat: no distance checks (the mock asserts), and the button keeps its order.
+  __combat = true
+  __dist = { nameplate1 = 5, nameplate3 = 50 }
+  local before = body()
+  ns.Scanner.Scan()
+  assert(body() == before, "no reordering in combat")
+  __combat = false
+  ns.Scanner.Scan()
+  assert(body():match("^/cleartarget\n([^\n]*)") == T .. "Kobold Worker", "reordered once out of combat")
+  -- Moving doesn't rewrite the button when the order stays the same.
+  local edits = 0
+  local set = button.SetAttribute
+  button.SetAttribute = function(self, k, v) if k == "macrotext" then edits = edits + 1 end; set(self, k, v) end
+  __dist = { nameplate1 = 6, nameplate3 = 60 }
+  ns.Scanner.Scan()
+  assert(edits == 0, "same order, no rewrite")
+  button.SetAttribute = set
+  __dist = {}
+
   -- Minimap right-click and the binding toggle Tracking.
   _G.MobsweepMinimapButton.__scripts.OnClick(_G.MobsweepMinimapButton, "RightButton")
   assert(not ns.settings.tracking and __tickers == 0 and not ns.Scanner.State().tracking, "right-click stops tracking")
   Mobsweep_ToggleTracking()
   assert(ns.settings.tracking and __tickers == 1, "binding starts it")
   Mobsweep_ToggleTracking()
+  assert(next(ns.Scanner.Nearby()) == nil, "Tracking off forgets distances")
+  assert(body():match("^/cleartarget\n([^\n]*)") == T .. "Kobold Worker", "back to the quest's own order")
 
   -- The panel can't be hidden in combat.
   __combat = true
   SlashCmdList.MOBSWEEP("button")
-  assert(panel:IsShown(), "panel waits for combat to end")
+  assert(panel:GetAlpha() == 1, "panel waits for combat to end")
   __combat = false
   fire("PLAYER_REGEN_ENABLED")
-  assert(not panel:IsShown(), "then hides")
+  -- Invisible and click-through, but still shown, so /click and the key binding keep working.
+  assert(panel:GetAlpha() == 0 and panel:IsShown() and button.__mouse == false and panel.__mouse == false, "then hides")
   SlashCmdList.MOBSWEEP("button")
-  assert(panel:IsShown(), "and comes back")
+  assert(panel:GetAlpha() == 1 and button.__mouse == true, "and comes back")
 
   -- Deleted in /macro: made again on the next change.
   __macros = {}

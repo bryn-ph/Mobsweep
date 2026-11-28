@@ -6,6 +6,8 @@
 -- in a card with the same information, on whichever side has more room).
 -- The button acts on mouse up, and a press that turns into a drag never clicks, so dragging doesn't fire it.
 -- The panel holds a secure button, so it can't be moved, resized, shown or hidden in combat; those wait.
+-- With "Show panel" off it's made invisible and click-through rather than hidden, since the bar macro
+-- (/click MobsweepTrackerButton) and the key binding press the button.
 -- The hover card isn't protected and can show in combat.
 local _, ns = ...
 
@@ -292,7 +294,15 @@ function TrackerButton.Update()
 	end
 	pending = false
 	applyStyle()
-	panel:SetShown(ns.settings.showButton)
+	-- "Hidden" means invisible and click-through, not :Hide(): the bar macro (/click) and the key binding
+	-- press this button, so it stays shown.
+	local on = ns.settings.showButton
+	panel:Show()
+	panel:SetAlpha(on and 1 or 0)
+	panel:EnableMouse(on)
+	button:EnableMouse(on)
+	toggle:SetShown(on and not panel.minimal)
+	if not on then hideCard() end
 	TrackerButton.Refresh()
 end
 

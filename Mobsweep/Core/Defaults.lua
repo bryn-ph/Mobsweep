@@ -18,7 +18,12 @@ ns.Limits = {
 
 ns.MACRO_NAME = "Mobsweep"
 ns.MACRO_ICON = "Ability_Hunter_SniperShot"
-ns.MACRO_LIMIT = 255 -- characters in a macro body
+-- The bar macro just clicks the Tag button, which holds the real text (Core/Macro.lua), so a macro's
+-- 255-character limit doesn't cut the mob list.
+ns.MACRO_BODY = "/click MobsweepTrackerButton"
+-- The Tag button's text (its macrotext, run by C_Macro.RunMacroText) can be longer than a macro; this keeps
+-- it within a sane size. Each line stays well under the 255 a single line can hold.
+ns.TEXT_LIMIT = 1023
 ns.TAG_BINDING = "CLICK MobsweepTrackerButton:LeftButton" -- Bindings.xml
 
 ns.PANEL_STYLES = { full = true, minimal = true }

@@ -175,7 +175,7 @@ local function fillList()
 		win.empty:SetText("No quest mobs")
 	end
 	win.empty:SetShown(#list == 0)
-	win.count:SetText(#list > 0 and ("%d of %d in the macro"):format(inMacro, #list) or "")
+	win.count:SetText(inMacro < #list and ("%d of %d included"):format(inMacro, #list) or "")
 end
 
 -- Window -----------------------------------------------------------------------------------------
